@@ -97,7 +97,7 @@ export default function Home() {
     <input name="guests" type="number" min="1" step="1" defaultValue="2" className="form-control" required />
   </div>
   <div className="col-md-4 d-flex align-items-end">
-    <button className="btn btn-primary w-100" type="submit">Ver disponíveis</button>
+    <button className="btn btn-primary w-100" type="submit">Buscar</button>
   </div>
 </form>
 

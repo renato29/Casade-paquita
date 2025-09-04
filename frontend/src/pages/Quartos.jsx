@@ -1,6 +1,6 @@
 // frontend/src/pages/Quartos.jsx
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import api from "../lib/api";
 const PEN = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', minimumFractionDigits: 0 });
@@ -10,23 +10,36 @@ export default function Quartos() {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [searchParams] = useSearchParams();
+
+  const ci = searchParams.get("check_in");
+  const co = searchParams.get("check_out");
+  const gs = searchParams.get("guests");
+
 
   useEffect(() => {
-    (async () => {
-      try {
-        const r = await api.get("/rooms");
-        const data = r?.data;
-        const arr = Array.isArray(data) ? data : (data?.rooms ?? []);
-        console.log("DEBUG rooms count:", arr.length, "sample:", arr[0]);
-        setRooms(arr);
-      } catch (e) {
-        console.error("DEBUG rooms error:", e);
-        setErr("Erro ao carregar quartos");
-      } finally {
-        setLoading(false);
+  const fetch = async () => {
+    try {
+      let r;
+      if (ci && co && gs) {
+        r = await api.get("/rooms/available", { params: { check_in: ci, check_out: co, guests: gs } });
+      } else {
+        r = await api.get("/rooms");
       }
-    })();
-  }, []);
+      const data = Array.isArray(r.data) ? r.data : (r.data?.rooms ?? []);
+      setRooms(data);
+    // eslint-disable-next-line no-unused-vars
+    } catch (e) {
+      setErr("Erro ao carregar quartos");
+      setRooms([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetch();
+}, [ci, co, gs]);;
+
 
   return (
     <div className="container py-4">
@@ -35,6 +48,15 @@ export default function Quartos() {
 
       {loading && <div>Carregando…</div>}
       {err && !loading && <div className="text-danger">{err}</div>}
+      {ci && co && gs && (
+        <div className="alert alert-info d-flex align-items-center justify-content-between">
+          <div>
+            Mostrando <strong>quartos disponíveis</strong> de <strong>{ci}</strong> a <strong>{co}</strong> ·
+            <strong> {gs}</strong> hóspede(s)
+          </div>
+          <Link className="btn btn-sm btn-outline-secondary" to="/quartos">Limpar filtros</Link>
+        </div>
+      )}
 
       <div className="row g-3">
         {rooms.map((room) => (
