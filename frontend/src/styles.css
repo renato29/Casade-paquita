@@ -1,0 +1,12 @@
+/* frontend/src/styles.css */
+.floating-wa {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+  z-index: 1050;
+}
