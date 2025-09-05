@@ -71,6 +71,36 @@ export default function Home() {
         </div>
       </section>
 
+{/* BUSCA RÁPIDA */}
+<form
+  className="row g-2 mt-4"
+  onSubmit={(e) => {
+    e.preventDefault();
+    const ci = e.currentTarget.check_in.value;
+    const co = e.currentTarget.check_out.value;
+    const gs = e.currentTarget.guests.value;
+    if (!ci || !co || !gs) return;
+    // Leva para /quartos com os filtros na URL
+    window.location.href = `/quartos?check_in=${ci}&check_out=${co}&guests=${gs}`;
+  }}
+>
+  <div className="col-md-3">
+    <label className="form-label">Check-in</label>
+    <input name="check_in" type="date" className="form-control" required />
+  </div>
+  <div className="col-md-3">
+    <label className="form-label">Check-out</label>
+    <input name="check_out" type="date" className="form-control" required />
+  </div>
+  <div className="col-md-2">
+    <label className="form-label">Hóspedes</label>
+    <input name="guests" type="number" min="1" step="1" defaultValue="2" className="form-control" required />
+  </div>
+  <div className="col-md-4 d-flex align-items-end">
+    <button className="btn btn-primary w-100" type="submit">Ver disponíveis</button>
+  </div>
+</form>
+
       {/* BENEFÍCIOS */}
       <section className="py-5">
         <div className="container">
