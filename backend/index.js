@@ -95,6 +95,40 @@ app.get('/api/rooms', (req, res) => {
   const rooms = db.prepare('SELECT * FROM rooms ORDER BY price_per_night ASC').all();
   res.json(rooms);
 });
+// GET /api/rooms/available?check_in=YYYY-MM-DD&check_out=YYYY-MM-DD&guests=2
+app.get('/api/rooms/available', (req, res) => {
+  const { z } = require('zod');
+
+  const schema = z.object({
+    check_in: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    check_out: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    guests: z.coerce.number().int().positive()
+  });
+
+  const parsed = schema.safeParse(req.query);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+
+  const { check_in, check_out, guests } = parsed.data;
+  if (check_out <= check_in) return res.status(400).json({ error: 'check_out deve ser depois de check_in' });
+
+  // Livres = capacidade suficiente E sem sobreposição de reservas no intervalo
+  // Sobreposição: (b.check_in < check_out) AND (b.check_out > check_in)
+  const rows = db.prepare(`
+    SELECT r.*
+      FROM rooms r
+     WHERE r.max_guests >= @guests
+       AND NOT EXISTS (
+           SELECT 1 FROM bookings b
+            WHERE b.room_id = r.id
+              AND b.check_in < @check_out
+              AND b.check_out > @check_in
+       )
+     ORDER BY r.price_per_night ASC
+  `).all({ guests, check_in, check_out });
+
+  res.json(rows);
+});
+
 
 
 // GET /api/rooms/:id  → retorna 1 quarto
